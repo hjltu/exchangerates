@@ -84,12 +84,13 @@ class Currency(object):
         return self.get_request(url, params)
 
 
-    def get_current(self, symbols=SYMBOLS):
+    def get_current(self):
 
         """
             Input: symbols='' for all symbols
         """
 
+        symbols = ''.join(SYMBOLS)
         params = {'base': BASE_SYMBOL, 'symbols': symbols}
         url = BASE_URL + 'latest'
 
@@ -108,8 +109,8 @@ class Currency(object):
         # params
         today = date.today().strftime("%Y-%m-%d")
         past = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
-
-        params = {'start_date': past, 'end_date': today, 'base': BASE_SYMBOL, 'symbols': SYMBOLS}
+        symbols = ''.join(SYMBOLS)
+        params = {'start_date': past, 'end_date': today, 'base': BASE_SYMBOL, 'symbols': symbols}
         url = BASE_URL + 'timeseries'
 
         res = self.get_request(url, params)
@@ -121,14 +122,42 @@ class Currency(object):
     def prepare_data(self, timeseries):
 
         """
-        Output:
+        Output: [
+                {'name': 'USD' 'price': 123, 'shift': -23, 'diff': 45},
+                {'name': 'EUR' 'price': 123, 'shift': -23, 'diff': 45}]
         """
 
-        table = []
+        table = [ { 'name': s, 'price': None, 'shift': None, 'diff': None } for s in SYMBOLS ]
+        prices = {s: [] for s in SYMBOLS}
 
-        for rates in timeseries.get('rates').values():
-            print(rates)
-        return
+        start_date = time.strftime("%d%b%y", time.strptime(timeseries.get('start_date'),'%Y-%m-%d'))
+        end_date = time.strftime("%d%b%y", time.strptime(timeseries.get('end_date'),'%Y-%m-%d'))
+        candles = self.get_candles(timeseries)
+        print(candles)
+
+
+    def get_candles(self, timeseries: dict) -> dict:
+
+        candles = {s: {'h': 0, 'l': 0, 'o': 0, 'c': 0} for s in SYMBOLS}
+
+        for symbol in SYMBOLS:
+            for date, rates in timeseries.get('rates').items():
+
+                if date == timeseries.get('end_date'):
+                    candles.get(symbol).update({'c': rates.get(symbol)})
+
+                if date == timeseries.get('start_date'):
+                    candles.get(symbol).update({'o': rates.get(symbol)})
+
+                if candles.get(symbol).get('l') == 0:
+                    candles.get(symbol).update({'l': rates.get(symbol) })
+
+                candles.get(symbol).update({'l': min(candles.get(symbol).get('l'), rates.get(symbol)) })
+                candles.get(symbol).update({'h': max(candles.get(symbol).get('h'), rates.get(symbol)) })
+
+        return candles
+
+
         for curr in candles:
             data = curr.get('data')
             periods = {'all': len(data), 'quart': 90, 'month': 30, 'week': 7}

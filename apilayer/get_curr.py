@@ -38,19 +38,20 @@ def main():
         timeseries = curr.get_timeseries()
         if timeseries:
             table = curr.prepare_data(timeseries)
-        #table = curr.prepare_data(timeseries)
-        #data = crypto.print_table(table)
-        #crypto.add_to_db(data)
+            data = curr.print_table(table)
+            #curr.add_to_db(data)
         try:
             time.sleep(LOOP_PAUSE)
         except KeyboardInterrupt:
             print(f'{Style.RESET}Interrupted')
             sys.exit(0)
 
+
 def test_main():
     curr = Currency()
-    print(json.dumps(TEST_TIMESERIES, indent=4))
-    table = curr.prepare_data(TEST_TIMESERIES)
+    #print('timeseries:', json.dumps(TEST_TIMESERIES, indent=4))
+    assert curr.prepare_data(TEST_TIMESERIES) == TEST_TABLE
+    data = curr.print_table(TEST_TABLE)
 
 
 class Currency(object):
@@ -97,19 +98,18 @@ class Currency(object):
         return self.get_request(url, params)
 
 
-    def get_timeseries(self, days=33):
+    def get_timeseries(self):
         """
         url = "api.apilayer.com/exchangerates_data/timeseries?start_date=2022-06-10&end_date=2022-06-28&base=RUB&symbols=EUR,GBP"
         headers = {apikey: }
-        response = 
 
-        Output:
+        Output: config.TEST_TIMESERIES
         """
 
         # params
         today = date.today().strftime("%Y-%m-%d")
-        past = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
-        symbols = ''.join(SYMBOLS)
+        past = (datetime.now() - timedelta(days=PERIOD_DAYS)).strftime("%Y-%m-%d")
+        symbols = ','.join(SYMBOLS)
         params = {'start_date': past, 'end_date': today, 'base': BASE_SYMBOL, 'symbols': symbols}
         url = BASE_URL + 'timeseries'
 
@@ -119,21 +119,40 @@ class Currency(object):
             return res
 
 
-    def prepare_data(self, timeseries):
+    def prepare_data(self, timeseries: dict) -> list:
 
         """
-        Output: [
-                {'name': 'USD' 'price': 123, 'shift': -23, 'diff': 45},
-                {'name': 'EUR' 'price': 123, 'shift': -23, 'diff': 45}]
+            Output: config.TEST_TABLE
         """
 
-        table = [ { 'name': s, 'price': None, 'shift': None, 'diff': None } for s in SYMBOLS ]
-        prices = {s: [] for s in SYMBOLS}
-
+        #print('timeseries:\n', timeseries)
         start_date = time.strftime("%d%b%y", time.strptime(timeseries.get('start_date'),'%Y-%m-%d'))
         end_date = time.strftime("%d%b%y", time.strptime(timeseries.get('end_date'),'%Y-%m-%d'))
+        print(start_date, end_date)
+
         candles = self.get_candles(timeseries)
-        print(candles)
+        #print('candles:\n', candles)
+
+        table = self.get_table(candles)
+        #print('table:\n', table)
+
+        return table
+
+
+    def get_table(self, candles: dict) -> list:
+
+        table = []
+        get_shift = lambda c, o: int((c-o)/(o/100))
+        get_diff = lambda h, l, o: int((h-l)/(o/100))
+
+        for name, candle in candles.items():
+
+            shift = get_shift(candle.get('c'), candle.get('o'))
+            diff = get_diff(candle.get('h'), candle.get('l'), candle.get('o'))
+            curr = {'name': name, 'shift': shift, 'diff': diff, **candle}
+            table.append(curr)
+
+        return table
 
 
     def get_candles(self, timeseries: dict) -> dict:
@@ -158,42 +177,43 @@ class Currency(object):
         return candles
 
 
-        for curr in candles:
-            data = curr.get('data')
-            periods = {'all': len(data), 'quart': 90, 'month': 30, 'week': 7}
-            table.append({'curr': curr.get('curr')})
-
-            if data:
-                timestamp_min = data[0].get('period')/1000
-                timestamp_max = data[len(data)-1].get('period')/1000
-                date_from = datetime.fromtimestamp(timestamp_min).strftime('%d%b%y')
-                date_to = datetime.fromtimestamp(timestamp_max).strftime('%d%b%y')
-                table[len(table)-1].update({'curr': curr.get('curr'), 'from': date_from, 'to': date_to, 'num': len(data)})
-
-                for per, day in periods.items():
-                    l = min([float(l.get('low')) for l in data[len(data)-day:]])
-                    h = max([float(m.get('high')) for m in data[len(data)-day:]])
-                    o = float(data[len(data)-day].get('open'))
-                    c = float(data[len(data)-1].get('close'))
-
-                    proc = int((c-o)/(o/100))
-                    diff = int((h-l)/(o/100))
-                    period = {per: {'l': l, 'h': h, 'o': o, 'c': c, 'p': proc, 'd': diff}}
-                    table[len(table)-1].update(period)
-            else:
-                table.append({'curr': curr.get('curr'), 'err': 'keine Daten'})
-
-        #print(json.dumps(table, indent=4))
-        return table
-
-
-    def print_table(self, table):
+    def print_table(self, table: list):
 
         """
         Output:
-            {'name': 'LTC', 'price': 62.16, 'BTC': 3, 'ETH': 0, 'LTC': 0}
         """
+
         curr_time = time.strftime("%d%b%y_%H:%M")
+        curr_data = time.strftime("%d%b%y")
+        color = Style.YELLOW
+        count = 0
+        msg = ''
+
+        line = f'ticker\tprice\tperiod\t{BASE_SYMBOL}\tticker\tprice\tperiod\t{curr_data}\tticker\tprice\tperiod'
+        print(f'{Style.BOLD}{line}{Style.RESET}')
+
+        for curr in table:
+
+            name = curr.get('name')
+            price = str(curr.get('c'))[:6]
+            shift = self.set_color(curr.get('shift'), -25, 25, color, Style.LIGHT_BLUE, Style.LIGHT_GREEN)
+            diff = self.set_color(curr.get('diff'), 40, 60, color, Style.BOLD, Style.LIGHT_RED)
+            msg = f'{name}\t{price}\t{shift}%{diff}'
+
+            if count % 3 == 0:
+                line = msg
+            else:
+                line += f'\t\t{msg}'
+
+            if count % 3 == 2:
+                print(f'{color}{line}{Style.RESET}')
+
+            count += 1
+            color = Style.YELLOW if color is Style.WHITE else Style.WHITE
+
+        #line = line + f'{Style.RESET}'
+        print(f'{Style.RESET}')
+        return
         currency_table=[]
         output_list = []
         color = Style.YELLOW
@@ -266,15 +286,6 @@ class Currency(object):
             return f'{Style.RESET}{Style.BOLD}{val}{Style.RESET}{color}'
 
         return f'{val}'
-
-
-    def my_dist(self, x, y):
-        if x < y:
-            return max(x-y, y-x)
-        if x > y:
-            return min(x-y, y-x)
-        else:
-            return 0
 
 
     def add_to_db(self, data):

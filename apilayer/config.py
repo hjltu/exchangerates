@@ -11,7 +11,8 @@ BASE_URL = "https://api.apilayer.com/exchangerates_data/"
 BASE_SYMBOL = "RUB"
 LOOP_PAUSE = 9999
 PERIOD_DAYS = 22
-CURR_DATABASE='../data/test_curr.db'
+CURR_DATABASE='../data/curr.db'
+PLOT = '../plots/curr.png'
 
 SYMBOLS = [ 'USD', 'EUR', 'GBP', 'JPY', 'CNY', 'HKD', 'TRY', 'KZT', 'BYN' ]
 
@@ -29,6 +30,11 @@ class Style():
     SELECT = '\033[7m'
     RESET = '\033[0m'
 
+########## TEST ##########
+
+TEST_DATABASE='../data/test_curr.db'
+
+TEST_PLOT = '../plots/test_curr.png'
 
 TEST_TIMESERIES = {
 'success': True, 'timeseries': True, 'start_date': '2022-06-29', 'end_date': '2022-07-02', 'base': 'RUB',
@@ -52,3 +58,14 @@ TEST_TABLE = [
 {'name': 'TRY', 'shift': -6, 'diff': 6, 'h': 0.316822, 'l': 0.295155, 'o': 0.316822, 'c': 0.295155},
 {'name': 'KZT', 'shift': -8, 'diff': 8, 'h': 8.913745, 'l': 8.172316, 'o': 8.913745, 'c': 8.172316},
 {'name': 'BYN', 'shift': -7, 'diff': 7, 'h': 0.064278, 'l': 0.059426, 'o': 0.064278, 'c': 0.059426}]
+
+TEST_DATA = [
+{'name': 'USD', 'shift': '-7', 'diff': '7', 'price': 0.017604},
+{'name': 'EUR', 'shift': '-7', 'diff': '7', 'price': 0.016884},
+{'name': 'GBP', 'shift': '-7', 'diff': '7', 'price': 0.014551},
+{'name': 'JPY', 'shift': '-8', 'diff': '8', 'price': 2.379731},
+{'name': 'CNY', 'shift': '-7', 'diff': '7', 'price': 0.117968},
+{'name': 'HKD', 'shift': '-7', 'diff': '7', 'price': 0.138137},
+{'name': 'TRY', 'shift': '-6', 'diff': '6', 'price': 0.295155},
+{'name': 'KZT', 'shift': '-8', 'diff': '8', 'price': 8.172316},
+{'name': 'BYN', 'shift': '-7', 'diff': '7', 'price': 0.059426}]

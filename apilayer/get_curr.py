@@ -8,6 +8,7 @@ install:
    venv/bin/pip install requests pytest
 run:
    venv/bin/pytest -s get_curr.py
+   venv/bin/pytest -rfP get_curr.py
    venv/bin/python get_curr.py
    venv/bin/python draw.py curr.db
 """
@@ -17,7 +18,6 @@ import os
 import sys
 import json
 import time
-print (os.getcwd())
 import requests
 from datetime import date, datetime, timedelta
 from config import *
@@ -31,15 +31,13 @@ MSG_ERR = f'{Style.LIGHT_RED}ERR: ' + 'code: {}, msg: {}' + f'{Style.RESET}'
 
 def main():
 
-    curr = Currency()
+    curr = Currency(CURR_DATABASE)
     while True:
-        #symbols = curr.get_symbols()
-        #prices = curr.get_current()
         timeseries = curr.get_timeseries()
         if timeseries:
             table = curr.prepare_data(timeseries)
             data = curr.print_table(table)
-            #curr.add_to_db(data)
+            curr.add_to_db(data)
         try:
             time.sleep(LOOP_PAUSE)
         except KeyboardInterrupt:
@@ -48,16 +46,16 @@ def main():
 
 
 def test_main():
-    curr = Currency()
-    #print('timeseries:', json.dumps(TEST_TIMESERIES, indent=4))
+    curr = Currency(TEST_DATABASE)
     assert curr.prepare_data(TEST_TIMESERIES) == TEST_TABLE
-    data = curr.print_table(TEST_TABLE)
+    assert curr.print_table(TEST_TABLE) == TEST_DATA
+    assert curr.add_to_db(TEST_DATA) == TEST_DATA
 
 
 class Currency(object):
 
-    def __init__(self):
-        self.db = DB(CURR_DATABASE)
+    def __init__(self, db_name):
+        self.db = DB(db_name)
 
 
     def get_request(self, url, params):
@@ -67,7 +65,6 @@ class Currency(object):
         try:
             res = requests.get(url, headers=headers, params=params)
             code, response = res.status_code, json.loads(res.text)
-            #print(code, response)
         except Exception as e:
             print(MSG_ERR.format(code, e))
 
@@ -125,16 +122,12 @@ class Currency(object):
             Output: config.TEST_TABLE
         """
 
-        #print('timeseries:\n', timeseries)
         start_date = time.strftime("%d%b%y", time.strptime(timeseries.get('start_date'),'%Y-%m-%d'))
         end_date = time.strftime("%d%b%y", time.strptime(timeseries.get('end_date'),'%Y-%m-%d'))
         print(start_date, end_date)
 
         candles = self.get_candles(timeseries)
-        #print('candles:\n', candles)
-
         table = self.get_table(candles)
-        #print('table:\n', table)
 
         return table
 
@@ -183,13 +176,14 @@ class Currency(object):
         Output:
         """
 
-        curr_time = time.strftime("%d%b%y_%H:%M")
-        curr_data = time.strftime("%d%b%y")
+        curr_time = time.strftime("%H:%M")
+        curr_data = time.strftime("%d-%b")
         color = Style.YELLOW
         count = 0
         msg = ''
+        data = []
 
-        line = f'ticker\tprice\tperiod\t{BASE_SYMBOL}\tticker\tprice\tperiod\t{curr_data}\tticker\tprice\tperiod'
+        line = f'ticker\tprice\tperiod\t{curr_data}\tticker\tprice\tperiod\t{curr_time}\tticker\tprice\tperiod'
         print(f'{Style.BOLD}{line}{Style.RESET}')
 
         for curr in table:
@@ -210,69 +204,11 @@ class Currency(object):
 
             count += 1
             color = Style.YELLOW if color is Style.WHITE else Style.WHITE
+            data.append({'name': name, 'shift': shift, 'diff': diff, 'price': curr.get('c')})
 
-        #line = line + f'{Style.RESET}'
         print(f'{Style.RESET}')
-        return
-        currency_table=[]
-        output_list = []
-        color = Style.YELLOW
-        cross = [c[2] for c in CURR]
-        line = Style.BOLD + 'name\t ' + '\t '.join(cross) + Style.RESET
-        currency_table.append(line.split(sep='\t'))
-        #print(NOTES, line)
 
-        for per in ('all', 'quart', 'month', 'week'):
-            line = f"{color}{per}"
-
-            for curr in table:
-                if curr.get('err'):
-                    line += f"\t{curr.get('err')}"
-                else:
-                    proc = self.set_color(curr.get(per).get('p'), -25, 25, color, Style.LIGHT_BLUE, Style.LIGHT_GREEN)
-                    diff = self.set_color(curr.get(per).get('d'), 40, 60, color, Style.BOLD, Style.LIGHT_RED)
-                    line += f"\t{proc}%{diff}"
-
-            #print(line + f'{Style.RESET}')
-            currency_table.append(line.split(sep='\t'))
-            color = Style.YELLOW if color is Style.WHITE else Style.WHITE
-
-        line_close = '$price'
-        for curr in table:
-            line_close += f"\t{curr.get('all').get('c')}"[:7]
-            output_data = {
-                'name': curr.get('curr'), 'time': curr_time, 'price': curr.get('all').get('c'),
-                'proc_week': curr.get('week').get('p')}
-            line = f"{color}{curr.get('curr')}{curr.get('num')}"
-
-            if curr.get('err'):
-                line += f"\t{curr.get('err')}"
-            else:
-                for cross in table:
-                    dist_a = self.my_dist(curr.get('all').get('p'), cross.get('all').get('p'))
-                    dist_q = self.my_dist(curr.get('quart').get('p'), cross.get('quart').get('p'))
-                    dist_m = self.my_dist(curr.get('month').get('p'), cross.get('month').get('p'))
-                    dist_w = self.my_dist(curr.get('week').get('p'), cross.get('week').get('p'))
-                    dist = int((dist_a+dist_q+dist_m+dist_w)/4)
-                    output_data.update({cross.get('curr'): dist_w})
-                    if dist == 0 and dist_w == 0:
-                        line += f"\t{Style.RESET}{Style.BOLD}{curr.get('curr')}{Style.RESET}{color}"
-                    else:
-                        dist = self.set_color(dist, -33, 33, color, Style.LIGHT_BLUE, Style.LIGHT_GREEN)
-                        dist_w = self.set_color(dist_w, -33, 33, color, Style.LIGHT_BLUE, Style.LIGHT_GREEN)
-                        line += f"\t{dist}%{dist_w}"
-            line = line + f'{Style.RESET}'
-            currency_table.append(line.split(sep='\t'))
-            output_list.append(output_data)
-
-            #print(line)
-            color = Style.YELLOW if color is Style.WHITE else Style.WHITE
-
-        currency_table.append(line_close.split(sep='\t'))
-        #print(line_close)
-        print(tabulate(currency_table))
-
-        return output_list
+        return data
 
 
     def set_color(self, val, diff_min, diff_max, color, color_min, color_max):
@@ -291,7 +227,7 @@ class Currency(object):
     def add_to_db(self, data):
 
         curr_time = time.strftime("%d%b%y_%H:%M")
-        val = self.db.add_to_db(curr_time, data)
+        val = self.db.write(curr_time, data)
 
         return val if val else None
 

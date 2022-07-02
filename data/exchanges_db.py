@@ -11,10 +11,10 @@ import shelve
 
 class DB():
 
-    def __init__(self,db: str = "cross.db"):
+    def __init__(self,db: str):
         self.db = db
 
-    def add_to_db(self, key, val=None):
+    def write(self, key, val=None):
 
         """ Add new value to persistent data storage,
             new value stored in db as dict { key : val }
@@ -35,7 +35,7 @@ class DB():
         return val if val else None
 
 
-    def get_from_db(self, val):
+    def read(self, val):
 
         """ Get value or all values from db """
 

@@ -33,7 +33,6 @@ class Style():
 ########## TEST ##########
 
 TEST_DATABASE='../data/test_curr.db'
-
 TEST_PLOT = '../plots/test_curr.png'
 
 TEST_TIMESERIES = {
@@ -60,12 +59,57 @@ TEST_TABLE = [
 {'name': 'BYN', 'shift': -7, 'diff': 7, 'h': 0.064278, 'l': 0.059426, 'o': 0.064278, 'c': 0.059426}]
 
 TEST_DATA = [
-{'name': 'USD', 'shift': '-7', 'diff': '7', 'price': 0.017604},
-{'name': 'EUR', 'shift': '-7', 'diff': '7', 'price': 0.016884},
-{'name': 'GBP', 'shift': '-7', 'diff': '7', 'price': 0.014551},
-{'name': 'JPY', 'shift': '-8', 'diff': '8', 'price': 2.379731},
-{'name': 'CNY', 'shift': '-7', 'diff': '7', 'price': 0.117968},
-{'name': 'HKD', 'shift': '-7', 'diff': '7', 'price': 0.138137},
-{'name': 'TRY', 'shift': '-6', 'diff': '6', 'price': 0.295155},
-{'name': 'KZT', 'shift': '-8', 'diff': '8', 'price': 8.172316},
-{'name': 'BYN', 'shift': '-7', 'diff': '7', 'price': 0.059426}]
+{'name': 'USD', 'shift': -7, 'diff': 7, 'price': 0.017604},
+{'name': 'EUR', 'shift': -7, 'diff': 7, 'price': 0.016884},
+{'name': 'GBP', 'shift': -7, 'diff': 7, 'price': 0.014551},
+{'name': 'JPY', 'shift': -8, 'diff': 8, 'price': 2.379731},
+{'name': 'CNY', 'shift': -7, 'diff': 7, 'price': 0.117968},
+{'name': 'HKD', 'shift': -7, 'diff': 7, 'price': 0.138137},
+{'name': 'TRY', 'shift': -6, 'diff': 6, 'price': 0.295155},
+{'name': 'KZT', 'shift': -8, 'diff': 8, 'price': 8.172316},
+{'name': 'BYN', 'shift': -7, 'diff': 7, 'price': 0.059426}]
+
+TEST_DATA_FROM_DB = [
+('02Jul22', [
+{'name': 'USD', 'shift': -7, 'diff': 7, 'price': 0.017604},
+{'name': 'EUR', 'shift': -7, 'diff': 7, 'price': 0.016884},
+{'name': 'GBP', 'shift': -7, 'diff': 7, 'price': 0.014551},
+{'name': 'JPY', 'shift': -8, 'diff': 8, 'price': 2.379731},
+{'name': 'CNY', 'shift': -7, 'diff': 7, 'price': 0.117968},
+{'name': 'HKD', 'shift': -7, 'diff': 7, 'price': 0.138137},
+{'name': 'TRY', 'shift': -6, 'diff': 6, 'price': 0.295155},
+{'name': 'KZT', 'shift': -8, 'diff': 8, 'price': 8.172316},
+{'name': 'BYN', 'shift': -7, 'diff': 7, 'price': 0.059426}])]
+
+TEST_DB_DATA = [
+('02Jul22', [
+{'name': 'USD', 'shift': -7, 'diff': 7, 'price': 0.017604},
+{'name': 'EUR', 'shift': -7, 'diff': 7, 'price': 0.016884},
+{'name': 'GBP', 'shift': -7, 'diff': 7, 'price': 0.014551},
+{'name': 'JPY', 'shift': -8, 'diff': 8, 'price': 2.379731},
+{'name': 'CNY', 'shift': -7, 'diff': 7, 'price': 0.117968},
+{'name': 'HKD', 'shift': -7, 'diff': 7, 'price': 0.138137},
+{'name': 'TRY', 'shift': -6, 'diff': 6, 'price': 0.295155},
+{'name': 'KZT', 'shift': -8, 'diff': 8, 'price': 8.172316},
+{'name': 'BYN', 'shift': -7, 'diff': 7, 'price': 0.059426}]),
+('03Jul21', [
+{'name': 'USD', 'shift': -7, 'diff': 7, 'price': 0.017604},
+{'name': 'EUR', 'shift': -7, 'diff': 7, 'price': 0.016884},
+{'name': 'GBP', 'shift': -7, 'diff': 7, 'price': 0.014551},
+{'name': 'JPY', 'shift': -8, 'diff': 8, 'price': 2.379731},
+{'name': 'CNY', 'shift': -7, 'diff': 7, 'price': 0.117968},
+{'name': 'HKD', 'shift': -7, 'diff': 7, 'price': 0.138137},
+{'name': 'TRY', 'shift': -6, 'diff': 6, 'price': 0.295155},
+{'name': 'KZT', 'shift': -8, 'diff': 8, 'price': 8.172316},
+{'name': 'BYN', 'shift': -7, 'diff': 7, 'price': 0.059426}])]
+
+TEST_TABLE_TO_DRAW = [
+{'name': 'USD', 'time': ['03Jul21', '02Jul22'], 'shift': [-7, -7]},
+{'name': 'EUR', 'time': ['03Jul21', '02Jul22'], 'shift': [-7, -7]},
+{'name': 'GBP', 'time': ['03Jul21', '02Jul22'], 'shift': [-7, -7]},
+{'name': 'JPY', 'time': ['03Jul21', '02Jul22'], 'shift': [-8, -8]},
+{'name': 'CNY', 'time': ['03Jul21', '02Jul22'], 'shift': [-7, -7]},
+{'name': 'HKD', 'time': ['03Jul21', '02Jul22'], 'shift': [-7, -7]},
+{'name': 'TRY', 'time': ['03Jul21', '02Jul22'], 'shift': [-6, -6]},
+{'name': 'KZT', 'time': ['03Jul21', '02Jul22'], 'shift': [-8, -8]},
+{'name': 'BYN', 'time': ['03Jul21', '02Jul22'], 'shift': [-7, -7]}]

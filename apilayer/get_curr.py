@@ -21,7 +21,6 @@ import time
 import requests
 from datetime import date, datetime, timedelta
 from config import *
-
 sys.path.append("..")
 from data.exchanges_db import DB
 
@@ -35,9 +34,10 @@ def main():
     while True:
         timeseries = curr.get_timeseries()
         if timeseries:
+            date = time.strftime("%d%b%y", time.strptime(timeseries.get('end_date'),'%Y-%m-%d'))
             table = curr.prepare_data(timeseries)
             data = curr.print_table(table)
-            curr.add_to_db(data)
+            curr.add_to_db(date, data)
         try:
             time.sleep(LOOP_PAUSE)
         except KeyboardInterrupt:
@@ -47,9 +47,10 @@ def main():
 
 def test_main():
     curr = Currency(TEST_DATABASE)
+    date = time.strftime("%d%b%y", time.strptime(TEST_TIMESERIES.get('end_date'),'%Y-%m-%d'))
     assert curr.prepare_data(TEST_TIMESERIES) == TEST_TABLE
     assert curr.print_table(TEST_TABLE) == TEST_DATA
-    assert curr.add_to_db(TEST_DATA) == TEST_DATA
+    assert curr.add_to_db(date, TEST_DATA) == TEST_DATA
 
 
 class Currency(object):
@@ -204,7 +205,7 @@ class Currency(object):
 
             count += 1
             color = Style.YELLOW if color is Style.WHITE else Style.WHITE
-            data.append({'name': name, 'shift': shift, 'diff': diff, 'price': curr.get('c')})
+            data.append({'name': name, 'shift': curr.get('shift'), 'diff': curr.get('diff'), 'price': curr.get('c')})
 
         print(f'{Style.RESET}')
 
@@ -224,10 +225,10 @@ class Currency(object):
         return f'{val}'
 
 
-    def add_to_db(self, data):
+    def add_to_db(self, date, data):
 
-        curr_time = time.strftime("%d%b%y_%H:%M")
-        val = self.db.write(curr_time, data)
+        #curr_time = time.strftime("%d%b%y_%H:%M")
+        val = self.db.write(date, data)
 
         return val if val else None
 

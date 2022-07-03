@@ -35,9 +35,9 @@ class DB():
         return val if val else None
 
 
-    def read(self, val):
+    def read(self, key=None):
 
         """ Get value or all values from db """
 
         with shelve.open(self.db) as db:
-            return db.get(val)
+            return db.get(key) if key else list(db.items())

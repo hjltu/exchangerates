@@ -34,10 +34,10 @@ def main():
     while True:
         timeseries = curr.get_timeseries()
         if timeseries:
-            date = time.strftime("%d%b%y", time.strptime(timeseries.get('end_date'),'%Y-%m-%d'))
+            curr_time = time.strftime("%d%b%y_%H:%M")
             table = curr.prepare_data(timeseries)
             data = curr.print_table(table)
-            curr.add_to_db(date, data)
+            curr.add_to_db(curr_time, data)
         try:
             time.sleep(LOOP_PAUSE)
         except KeyboardInterrupt:

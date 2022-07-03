@@ -39,8 +39,8 @@ def test_main(db_file=TEST_DATABASE, plt_file=TEST_PLOT):
 def prepare_table(data):
 
     times = [t[0] for t in data]
-    times = sorted([datetime.strptime(tm,'%d%b%y') for tm in times])
-    times = [tm.strftime('%d%b%y') for tm in times]
+    times = sorted([datetime.strptime(tm,'%d%b%y_%H:%M') for tm in times])
+    times = [tm.strftime('%d%b%y_%H:%M') for tm in times]
 
     table = []
     table = [{'name': d.get('name'), 'time': times, 'shift': []} for d in data[0][1]]
@@ -94,49 +94,6 @@ def draw_plot(table, plt_file):
     print('saved')
 
     return True
-
-
-def print_table(table):
-
-    num = len(table)
-    #fig = plt.figure(figsize=(30, 15), dpi=80)
-    fig = plt.figure(figsize=(25, num*7), dpi=80)
-    fig.patch.set_facecolor('tan')
-    plt.rcParams['axes.facecolor'] = 'silver'
-
-    for n in range(num):
-        coin = table[n]
-        plt.subplot(num, 1, n+1)
-        plt.ylabel(coin.get('name'))
-        t = coin.get('time')
-        p = coin.get('price')
-
-        #cycol = cycle('bgrcmyk')
-        cycol = cycle(['blue','orange','green','red','brown','pink','olive','cyan','magenta','gold','beige','lime','violet','skyblue'])
-        for k, v in coin.items():
-            if k == 'name' or k == 'time' or k == 'price':
-                continue
-            if sum(v) is not 0:
-                c = [p[i] + (p[i]/100)*v[i] for i in range(len(v))]
-                if len(t) > len(c):
-                    #print('t,c,v =', len(t),len(c), len(v))
-                    c.insert(0, c[0])
-                    v.insert(0, v[0])
-                plt.plot(t, c, color=next(cycol), label=k, linewidth=4)
-
-        plt.plot(t, p, color='black', label='price', linewidth=4, marker='o', markevery=int(len(p)/9)+1)
-        #plt.ylim(min(p), max(p))
-        #plt.yticks(np.arange(min(p), max(p), 1))
-
-        if len(t) > 9:
-            plt.xticks([t[i] for i in range(0, len(t), int(len(t)/5))])
-        plt.grid(color = 'grey', linestyle = '--', linewidth = 0.5)
-        plt.tick_params(left=True, right=True)
-        plt.tick_params(labelleft=True, labelright=True)
-        plt.legend()
-
-    plt.savefig('plots/draw.png')
-    print('saved')
 
 
 if __name__ == '__main__':

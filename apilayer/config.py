@@ -10,7 +10,7 @@ API_KEY = 'apilayer key'
 BASE_URL = "https://api.apilayer.com/exchangerates_data/"
 BASE_SYMBOL = "RUB"
 LOOP_PAUSE = 9999
-PERIOD_DAYS = 11
+PERIOD_DAYS = 33
 CURR_DATABASE='../data/curr.db'
 PLOT = '../plots/curr.png'
 SYMBOLS = [ 'USD', 'EUR', 'GBP', 'JPY', 'CNY', 'HKD', 'TRY', 'KZT', 'BYN' ]
@@ -65,16 +65,16 @@ TEST_DATA_FROM_DB = [
 {'name': 'GBP', 'shift': 7, 'diff': 7, 'price': 68.72379905161158}])]
 
 TEST_DB_DATA = [
-('03Jul21', [
-{'name': 'USD', 'shift': 8, 'diff': 8, 'price': 56.8052715291979},
+('03Jul21_03:04', [
+{'name': 'USD', 'shift': -8, 'diff': 8, 'price': 56.8052715291979},
 {'name': 'EUR', 'shift': 7, 'diff': 7, 'price': 59.227671167969675},
 {'name': 'GBP', 'shift': 7, 'diff': 7, 'price': 68.72379905161158}]),
-('02Jul22', [
+('02Jul22_04:03', [
 {'name': 'USD', 'shift': 8, 'diff': 8, 'price': 56.8052715291979},
-{'name': 'EUR', 'shift': 7, 'diff': 7, 'price': 59.227671167969675},
+{'name': 'EUR', 'shift': -7, 'diff': 7, 'price': 59.227671167969675},
 {'name': 'GBP', 'shift': 7, 'diff': 7, 'price': 68.72379905161158}])]
 
 TEST_TABLE_TO_DRAW = [
-{'name': 'USD', 'time': ['03Jul21', '02Jul22'], 'shift': [8, 8]},
-{'name': 'EUR', 'time': ['03Jul21', '02Jul22'], 'shift': [7, 7]},
-{'name': 'GBP', 'time': ['03Jul21', '02Jul22'], 'shift': [7, 7]}]
+{'name': 'USD', 'time': ['03Jul21_03:04', '02Jul22_04:03'], 'shift': [-8, 8]},
+{'name': 'EUR', 'time': ['03Jul21_03:04', '02Jul22_04:03'], 'shift': [7, -7]},
+{'name': 'GBP', 'time': ['03Jul21_03:04', '02Jul22_04:03'], 'shift': [7, 7]}]

@@ -30,7 +30,7 @@ MSG_ERR = f'{Style.LIGHT_RED}ERR: ' + 'code: {}, msg: {}' + f'{Style.RESET}'
 
 def main():
 
-    curr = Currency(CURR_DATABASE)
+    curr = Currency(SYMBOLS, BASE_SYMBOL, CURR_DATABASE)
     while True:
         timeseries = curr.get_timeseries()
         if timeseries:
@@ -46,7 +46,7 @@ def main():
 
 
 def test_main():
-    curr = Currency(TEST_DATABASE)
+    curr = Currency(TEST_SYMBOLS, TEST_BASE_SYMBOL, TEST_DATABASE)
     date = time.strftime("%d%b%y", time.strptime(TEST_TIMESERIES.get('end_date'),'%Y-%m-%d'))
     assert curr.prepare_data(TEST_TIMESERIES) == TEST_TABLE
     assert curr.print_table(TEST_TABLE) == TEST_DATA
@@ -55,7 +55,9 @@ def test_main():
 
 class Currency(object):
 
-    def __init__(self, db_name):
+    def __init__(self, symbols, base, db_name):
+        self.symbols = symbols
+        self.base = base
         self.db = DB(db_name)
 
 
@@ -89,8 +91,8 @@ class Currency(object):
             Input: symbols='' for all symbols
         """
 
-        symbols = ''.join(SYMBOLS)
-        params = {'base': BASE_SYMBOL, 'symbols': symbols}
+        symbols = ''.join(self.symbols)
+        params = {'base': self.base, 'symbols': symbols}
         url = BASE_URL + 'latest'
 
         return self.get_request(url, params)
@@ -107,8 +109,8 @@ class Currency(object):
         # params
         today = date.today().strftime("%Y-%m-%d")
         past = (datetime.now() - timedelta(days=PERIOD_DAYS)).strftime("%Y-%m-%d")
-        symbols = ','.join(SYMBOLS)
-        params = {'start_date': past, 'end_date': today, 'base': BASE_SYMBOL, 'symbols': symbols}
+        symbols = ','.join(self.symbols)
+        params = {'start_date': past, 'end_date': today, 'base': self.base, 'symbols': symbols}
         url = BASE_URL + 'timeseries'
 
         res = self.get_request(url, params)
@@ -151,10 +153,13 @@ class Currency(object):
 
     def get_candles(self, timeseries: dict) -> dict:
 
-        candles = {s: {'h': 0, 'l': 0, 'o': 0, 'c': 0} for s in SYMBOLS}
+        candles = {s: {'h': 0, 'l': 0, 'o': 0, 'c': 0} for s in self.symbols}
 
-        for symbol in SYMBOLS:
+        for symbol in self.symbols:
             for date, rates in timeseries.get('rates').items():
+
+                # convert price to base's values
+                timeseries.get('rates').get(date).update({symbol: 1/rates.get(symbol)})
 
                 if date == timeseries.get('end_date'):
                     candles.get(symbol).update({'c': rates.get(symbol)})

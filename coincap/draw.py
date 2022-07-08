@@ -5,28 +5,29 @@ import matplotlib.pyplot as plt
 #from matplotlib.pyplot import figure
 import numpy as np
 from itertools import cycle
-from config import CRYPTO_DATABASE
+from config import *
+sys.path.append("..")
+from data.exchanges_db import DB
 
 
-def main(dbfile):
-    print('open',dbfile)
+def main(db_file=CRYPTO_DATABASE, plt_file=PLOT):
+    print('open',db_file)
     ctm = time.strftime("%b%y")
 
-    coins_list, times_sorted = prepare_data(dbfile)
+    coins_list, times_sorted = prepare_data(db_file)
     table = prepare_table(times_sorted)
-    print_proc(table)
+    print_proc(table, plt_file)
     #print_table(table)
 
 
-def prepare_data(dbfile):
-    with shelve.open(dbfile) as db:
-        #coins_list = sorted(list(db.items()))
-        coins_list = list(db.items())
+def prepare_data(db_file):
 
-        times = list(db.keys())
-        times = sorted([datetime.strptime(tm,'%d%b%y_%H:%M') for tm in times])
-        times = [tm.strftime('%d%b%y_%H:%M') for tm in times]
-        #k = [tm for tm in k if ctm in tm]
+    db = DB(db_file)
+    coins_list = db.read()
+    times = [ t[0] for t in coins_list ]
+    times = sorted([datetime.strptime(tm,'%d%b%y_%H:%M') for tm in times])
+    times = [tm.strftime('%d%b%y_%H:%M') for tm in times]
+    #k = [tm for tm in k if ctm in tm]
 
     times_sorted = []
     for key in times:
@@ -89,7 +90,7 @@ def prepare_table(times_sorted):
     return table
 
 
-def print_proc(table):
+def print_proc(table, plt_file):
     num = len(table)
     fig = plt.figure(figsize=(30, 15), dpi=80)
     fig.patch.set_facecolor('tan')
@@ -117,11 +118,11 @@ def print_proc(table):
     plt.tick_params(labelleft=True, labelright=True)
     plt.legend()
 
-    plt.savefig('plots/draw.png')
+    plt.savefig(plt_file)
     print('saved')
 
 
-def print_table(table):
+def print_table(table, plt_file):
 
     num = len(table)
     #fig = plt.figure(figsize=(30, 15), dpi=80)
@@ -160,8 +161,9 @@ def print_table(table):
         plt.tick_params(labelleft=True, labelright=True)
         plt.legend()
 
-    plt.savefig('plots/draw.png')
+    plt.savefig(plt_file)
     print('saved')
 
 if __name__ == '__main__':
-    main(sys.argv[1:][0])
+    #main(sys.argv[1:][0])
+    main()

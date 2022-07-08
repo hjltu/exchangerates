@@ -11,8 +11,8 @@ install:
    venv/bin/pip install --upgrade pip
    venv/bin/pip install requests tabulate pytest
 run:
-   venv/bin/pytest grt_crypto_curr.py
-   venv/bin/python grt_crypto_curr.py
+   venv/bin/pytest get_crypto_curr.py
+   venv/bin/python get_crypto_curr.py
 """
 
 
@@ -52,8 +52,6 @@ class Crypto(object):
     def get_candles(self, days=222):
         """
         url = "api.coincap.io/v2/candles?exchange=poloniex&interval=h8&baseId=ethereum&quoteId=bitcoin
-        payload={}
-        headers = {}
         response = requests.request("GET", url, headers=headers, data=payload)
 
         Output:

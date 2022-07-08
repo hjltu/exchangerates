@@ -11,16 +11,17 @@ API_URL = "https://api.coincap.io/v2/candles"
 CANDLE_INTERVAL = "d1"
 QUOTE_ID = "tether"
 LOOP_PAUSE = 9999
-CRYPTO_DATABASE='data/cross.db'
+CRYPTO_DATABASE='../data/crypto.db'
+PLOT = '../plots/crypto.png'
 
 CURR = [
-    ('bibox', 'bitcoin', 'BTC'),
-    ('bibox', 'ethereum', 'ETH'),
-    ('bibox', 'litecoin', 'LTC'),
-    ('bibox', 'tron', 'TRX'),
+    ('binance', 'bitcoin', 'BTC'),
+    ('binance', 'ethereum', 'ETH'),
+    ('binance', 'litecoin', 'LTC'),
+    ('binance', 'tron', 'TRX'),
     ('binance', 'xrp', 'XRP'),
     ('binance', 'monero', 'XMR'),
-    ('bibox', 'zcash', 'ZEC'),
+    ('binance', 'zcash', 'ZEC'),
     ('binance', 'polkadot', 'DOT'),
     ('binance', 'avalanche', 'AVAX'),
     ('binance', 'cosmos', 'ATOM'),

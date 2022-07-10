@@ -116,6 +116,9 @@ class Currency(object):
 
         res = self.get_request(url, params)
 
+        if isinstance(res, type(None)):
+            return None
+
         if res.get('success') == True:
             return res
 
@@ -160,7 +163,7 @@ class Currency(object):
             for date, rates in timeseries.get('rates').items():
 
                 # convert price to base's values
-                if self.base != 'USD':
+                if symbol == 'BTC':
                     timeseries.get('rates').get(date).update({symbol: 1/rates.get(symbol)})
 
                 if date == timeseries.get('end_date'):

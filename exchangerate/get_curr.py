@@ -25,8 +25,8 @@ sys.path.append("..")
 from data.exchanges_db import DB
 
 
-
 MSG_ERR = f'{Style.LIGHT_RED}ERR: ' + 'code: {}, msg: {}' + f'{Style.RESET}'
+
 
 def main():
 

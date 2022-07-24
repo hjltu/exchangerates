@@ -9,12 +9,13 @@ config for get_crypto
 
 API_URL = "https://api.coincap.io/v2/candles"
 CANDLE_INTERVAL = "d1"
-QUOTE_ID = "tether"
+PERIOD_DAYS = 33
+BASE_SYMBOL = "tether"
 LOOP_PAUSE = 9999
 CRYPTO_DATABASE='../data/crypto.db'
 PLOT = '../plots/crypto.png'
 
-CURR = [
+SYMBOLS = [
     ('binance', 'bitcoin', 'BTC'),
     ('binance', 'ethereum', 'ETH'),
     ('binance', 'litecoin', 'LTC'),
@@ -27,28 +28,11 @@ CURR = [
     ('binance', 'cosmos', 'ATOM'),
     ('binance', 'solana', 'SOL'),
     ('binance', 'cardano', 'ADA'),
-#    ('binance', 'kusama', 'KSM'),
-#    ('binance', 'dogecoin', 'DOGE'),
-#    ('binance', 'terra-luna', 'LUNA'),
-
-#    ('binance', 'polygon', 'MATIC'),
-#    ('binance', 'near-protocol', 'NEAR'),
-#    ('binance', 'chainlink', 'LINK'),
-#    ('binance', 'uniswap', 'UNI'),
-#    ('binance', 'stellar', 'XLM'),
 ]
+
 NOTES = """
 guarda:
     - SOL, XMR, ZEC, AVAX
-goals to buy:
-    BTC: 30K
-    ETH: 2K-1K
-    LTC: 80-60
-    TRX: 0.055
-    XRP: 0.4-0.3
-    XMR: 150-100
-    ZEC: 100-50
-    LUNA: 10-5
 """
 
 class Style():

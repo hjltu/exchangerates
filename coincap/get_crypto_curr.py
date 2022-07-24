@@ -24,23 +24,32 @@ from tabulate import tabulate
 from time import sleep
 from datetime import datetime, timedelta
 from config import *
-from data.crypto_db import DB
+sys.path.append("..")
+from data.exchanges_db import DB
+
+
+MSG_ERR = f'{Style.LIGHT_RED}ERR: ' + 'code: {}, msg: {}' + f'{Style.RESET}'
 
 
 def main():
 
-    #print(__doc__)
-    crypto = Crypto()
+    crypto = Crypto(SYMBOLS, BASE_SYMBOL, CRYPTO_DATABASE)
     while True:
         candles = crypto.get_candles()
-        table = crypto.prepare_data(candles)
-        data = crypto.print_table(table)
-        crypto.add_to_db(data)
+        if candles:
+            curr_time = time.strftime("%d%b%y_%H:%M")
+            table = crypto.prepare_data(candles)
+            data = crypto.print_table(table)
+            crypto.add_to_db(data)
         try:
             sleep(LOOP_PAUSE)
         except KeyboardInterrupt:
             print(f'{Style.RESET}Interrupted')
             sys.exit(0)
+
+
+def test_main():
+    crypto = Crypto(TEST_SYMBOLS, TEST_BASE_SYMBOL, TEST_DATABASE)
 
 
 class Crypto(object):
@@ -49,38 +58,17 @@ class Crypto(object):
         self.db = DB(CRYPTO_DATABASE)
 
 
-    def get_candles(self, days=222):
+    def get_candles(self):
         """
         url = "api.coincap.io/v2/candles?exchange=poloniex&interval=h8&baseId=ethereum&quoteId=bitcoin
-        response = requests.request("GET", url, headers=headers, data=payload)
-
-        Output:
-            candles = 
-                [
-                    {
-                    'timestamp': 1656018534028,
-                    'curr': 'ADA',
-                    'data':
-                        [
-                            {
-                            "open": "0.4594000000000000",
-                            "high": "0.4799000000000000",
-                            "low": "0.4563000000000000",
-                            "close": "0.4773000000000000",
-                            "volume": "137010681.3000000000000000",
-                            "period": 1655942400000
-                            },
-                        ],
-                    },
-                ]
         """
 
         candles = []
         # params
         today = int(datetime.now().timestamp() * 1000)
-        diff = datetime.now() - timedelta(days=days)
+        diff = datetime.now() - timedelta(days=PERIOD_DAYS)
         past = int(diff.timestamp() * 1000)
-        params = {'interval': CANDLE_INTERVAL, 'quoteId': QUOTE_ID, 'start': past, 'end': today}
+        params = {'interval': CANDLE_INTERVAL, 'quoteId': BASE_SYMBOL, 'start': past, 'end': today}
 
         for curr in CURR:
             params.update({'exchange': curr[0], 'baseId': curr[1]})
@@ -100,47 +88,6 @@ class Crypto(object):
     def prepare_data(self, candles):
 
         """
-        Output:
-        [
-            {
-                "curr": "BTC",
-                "from": "16Nov21",
-                "to": "24Jun22",
-                "num": 221,
-                "all": {
-                    "l": 18024.7,
-                    "h": 62180.9,
-                    "o": 62113.6,
-                    "c": 20811.4,
-                    "p": -66,
-                    "d": 71
-                },
-                "quart": {
-                    "l": 18024.7,
-                    "h": 48114.8,
-                    "o": 44554.8,
-                    "c": 20811.4,
-                    "p": -53,
-                    "d": 67
-                },
-                "month": {
-                    "l": 18024.7,
-                    "h": 32151.7,
-                    "o": 29592.4,
-                    "c": 20811.4,
-                    "p": -29,
-                    "d": 47
-                },
-                "week": {
-                    "l": 18024.7,
-                    "h": 21655.3,
-                    "o": 20511.1,
-                    "c": 20811.4,
-                    "p": 1,
-                    "d": 17
-                }
-            },
-        ]
         """
 
         table = []
@@ -177,8 +124,6 @@ class Crypto(object):
     def print_table(self, table):
 
         """
-        Output:
-            {'name': 'LTC', 'price': 62.16, 'BTC': 3, 'ETH': 0, 'LTC': 0}
         """
         curr_time = time.strftime("%d%b%y_%H:%M")
         currency_table=[]

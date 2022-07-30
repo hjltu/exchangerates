@@ -143,12 +143,12 @@ class Currency(object):
 
         table = []
         get_shift = lambda c, o: int((c-o)/(o/100))
-        get_diff = lambda h, l, o: int((h-l)/(o/100))
+        get_diff = lambda h, l, o: int((l-h)/(o/100))
 
         for name, candle in candles.items():
 
-            shift = get_shift(candle.get('c'), candle.get('o'))
-            diff = get_diff(candle.get('h'), candle.get('l'), candle.get('o'))
+            shift = get_shift(1/candle.get('c'), 1/candle.get('o'))
+            diff = get_diff(1/candle.get('h'), 1/candle.get('l'), 1/candle.get('o'))
             curr = {'name': name, 'shift': shift, 'diff': diff, **candle}
             table.append(curr)
 
@@ -163,8 +163,8 @@ class Currency(object):
             for date, rates in timeseries.get('rates').items():
 
                 # convert price to base's values
-                if symbol == 'BTC':
-                    timeseries.get('rates').get(date).update({symbol: 1/rates.get(symbol)})
+                #if symbol == 'BTC':
+                #    timeseries.get('rates').get(date).update({symbol: 1/rates.get(symbol)})
 
                 if date == timeseries.get('end_date'):
                     candles.get(symbol).update({'c': rates.get(symbol)})
@@ -200,7 +200,10 @@ class Currency(object):
         for curr in table:
 
             name = curr.get('name')
-            price = str(curr.get('c'))[:6]
+            if name == 'BTC':
+                price = str(1/curr.get('c'))[:6]
+            else:
+                price = str(curr.get('c'))[:6]
             shift = self.set_color(curr.get('shift'), -25, 25, color, Style.LIGHT_BLUE, Style.LIGHT_GREEN)
             diff = self.set_color(curr.get('diff'), 40, 60, color, Style.BOLD, Style.LIGHT_RED)
             msg = f'{name}\t{price}\t{shift}%{diff}'

@@ -21,12 +21,14 @@ RUN pip3 install -U requests pytest tabulate matplotlib
 
 ENV USER=check
 RUN addgroup -S $USER && adduser -S -G $USER $USER
+
+WORKDIR /home/$USER
+#RUN cd /home/$USER && git clone --single-branch -b master https://github.com/hjltu/exchangerates.git
+COPY . .
+RUN chown $USER:$USER *
 USER $USER
 
-#WORKDIR /home/$USER
-# how to delete this cached layer
-RUN cd /home/$USER && git clone --single-branch -b master https://github.com/hjltu/exchangerates.git
-WORKDIR /home/$USER/exchangerates
+#WORKDIR /home/$USER/exchangerates
 
 RUN cd tinkoff && git clone --single-branch -b main https://github.com/hjltu/tinkoff_client
 

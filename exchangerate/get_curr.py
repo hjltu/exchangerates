@@ -175,8 +175,11 @@ class Currency(object):
                 if candles.get(symbol).get('l') == 0:
                     candles.get(symbol).update({'l': rates.get(symbol) })
 
-                candles.get(symbol).update({'l': min(candles.get(symbol).get('l'), rates.get(symbol)) })
-                candles.get(symbol).update({'h': max(candles.get(symbol).get('h'), rates.get(symbol)) })
+                try:
+                    candles.get(symbol).update({'l': min(candles.get(symbol).get('l'), rates.get(symbol)) })
+                    candles.get(symbol).update({'h': max(candles.get(symbol).get('h'), rates.get(symbol)) })
+                except Exception as e:
+                    print(MSG_ERR.format(code, e))
 
         return candles
 
@@ -240,7 +243,6 @@ class Currency(object):
 
     def add_to_db(self, date, data):
 
-        #curr_time = time.strftime("%d%b%y_%H:%M")
         val = self.db.write(date, data)
 
         return val if val else None

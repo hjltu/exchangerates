@@ -11,7 +11,8 @@ install:
    venv/bin/pip install --upgrade pip
    venv/bin/pip install requests tabulate pytest
 run:
-   venv/bin/pytest get_crypto_curr.py
+   venv/bin/pytest -s get_crypto_curr.py
+   venv/bin/pytest -rfP get_crypto_curr.py
    venv/bin/python get_crypto_curr.py
 """
 
@@ -21,7 +22,6 @@ import json
 import time
 import requests
 from tabulate import tabulate
-from time import sleep
 from datetime import datetime, timedelta
 from config import *
 sys.path.append("..")
@@ -39,23 +39,29 @@ def main():
         if candles:
             curr_time = time.strftime("%d%b%y_%H:%M")
             table = crypto.prepare_data(candles)
-            data = crypto.print_table(table)
-            crypto.add_to_db(data)
+            data = crypto.print_table(table, SYMBOLS)
+            crypto.add_to_db(curr_time, data)
         try:
-            sleep(LOOP_PAUSE)
+            time.sleep(LOOP_PAUSE)
         except KeyboardInterrupt:
             print(f'{Style.RESET}Interrupted')
             sys.exit(0)
 
 
 def test_main():
-    crypto = Crypto(TEST_SYMBOLS, TEST_BASE_SYMBOL, TEST_DATABASE)
+    crypto = Crypto(TEST_SYMBOLS, BASE_SYMBOL, TEST_DATABASE)
+    date = datetime.fromtimestamp(TEST_CANDLES[0].get('timestamp')//1000).strftime("%d%b%y_%H:%M")
+    assert crypto.prepare_data(TEST_CANDLES) == TEST_TABLE
+    assert crypto.print_table(TEST_TABLE, TEST_SYMBOLS) == TEST_DATA
+    assert crypto.add_to_db(date, TEST_DATA) == TEST_DATA
 
 
 class Crypto(object):
 
-    def __init__(self):
-        self.db = DB(CRYPTO_DATABASE)
+    def __init__(self, symbols, base, db_name):
+        self.symbols = symbols
+        self.base = base
+        self.db = DB(db_name)
 
 
     def get_candles(self):
@@ -68,15 +74,15 @@ class Crypto(object):
         today = int(datetime.now().timestamp() * 1000)
         diff = datetime.now() - timedelta(days=PERIOD_DAYS)
         past = int(diff.timestamp() * 1000)
-        params = {'interval': CANDLE_INTERVAL, 'quoteId': BASE_SYMBOL, 'start': past, 'end': today}
+        params = {'interval': CANDLE_INTERVAL, 'quoteId': self.base, 'start': past, 'end': today}
 
-        for curr in CURR:
-            params.update({'exchange': curr[0], 'baseId': curr[1]})
+        for curr in self.symbols:
+            params.update({'exchange': curr.get('exchange'), 'baseId': curr.get('id')})
             try:
                 res = requests.get(API_URL, headers={}, data={}, params=params)
                 code, response = res.status_code, json.loads(res.text)
                 if code == 200:
-                    response.update({'curr': curr[2]})
+                    response.update({'curr': curr.get('symbol')})
                     candles.append(response)
             except Exception as e:
                 pass
@@ -107,7 +113,7 @@ class Crypto(object):
                 for per, day in periods.items():
                     l = min([float(l.get('low')) for l in data[len(data)-day:]])
                     h = max([float(m.get('high')) for m in data[len(data)-day:]])
-                    o = float(data[len(data)-day].get('open'))
+                    o = float(data[len(data)-day].get('open')) if len(data) > day else float(data[0].get('open'))
                     c = float(data[len(data)-1].get('close'))
 
                     proc = int((c-o)/(o/100))
@@ -121,7 +127,7 @@ class Crypto(object):
         return table
 
 
-    def print_table(self, table):
+    def print_table(self, table, symbols):
 
         """
         """
@@ -129,7 +135,7 @@ class Crypto(object):
         currency_table=[]
         output_list = []
         color = Style.YELLOW
-        cross = [c[2] for c in CURR]
+        cross = [c.get('symbol') for c in symbols]
         line = Style.BOLD + 'name\t ' + '\t '.join(cross) + Style.RESET
         currency_table.append(line.split(sep='\t'))
         #print(NOTES, line)
@@ -153,8 +159,8 @@ class Crypto(object):
         for curr in table:
             line_close += f"\t{curr.get('all').get('c')}"[:7]
             output_data = {
-                'name': curr.get('curr'), 'time': curr_time, 'price': curr.get('all').get('c'),
-                'proc_week': curr.get('week').get('p')}
+                'name': curr.get('curr'), 'price': curr.get('all').get('c'),
+                'shift': curr.get('week').get('p'), 'diff': curr.get('week').get('d')}
             line = f"{color}{curr.get('curr')}{curr.get('num')}"
 
             if curr.get('err'):
@@ -166,7 +172,6 @@ class Crypto(object):
                     dist_m = self.my_dist(curr.get('month').get('p'), cross.get('month').get('p'))
                     dist_w = self.my_dist(curr.get('week').get('p'), cross.get('week').get('p'))
                     dist = int((dist_a+dist_q+dist_m+dist_w)/4)
-                    output_data.update({cross.get('curr'): dist_w})
                     if dist == 0 and dist_w == 0:
                         line += f"\t{Style.RESET}{Style.BOLD}{curr.get('curr')}{Style.RESET}{color}"
                     else:
@@ -209,10 +214,9 @@ class Crypto(object):
             return 0
 
 
-    def add_to_db(self, data):
+    def add_to_db(self, date, data):
 
-        curr_time = time.strftime("%d%b%y_%H:%M")
-        val = self.db.add_to_db(curr_time, data)
+        val = self.db.write(date, data)
 
         return val if val else None
 

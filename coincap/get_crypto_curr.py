@@ -186,7 +186,7 @@ class Crypto(object):
             color = Style.YELLOW if color is Style.WHITE else Style.WHITE
 
         currency_table.append(line_close.split(sep='\t'))
-        #print(line_close)
+        print(curr_time)
         print(tabulate(currency_table))
 
         return output_list

@@ -97,7 +97,11 @@ def main(dbfile):
         p = coin.get('proc')
         proc_min = min(p) if min(p) < proc_min else proc_min
         proc_max = max(p) if max(p) > proc_max else proc_max
-        plt.plot(times, p, color=next(cycol), label=label, linewidth=3, marker='o', markevery=int(len(p)/9)+1)
+        try:
+            plt.plot(times, [0]*len(times), color='black', linewidth=3, linestyle='dotted')
+            plt.plot(times, p, color=next(cycol), label=label, linewidth=3, marker='o', markevery=int(len(p)/9)+1)
+        except:
+            print(label, len(times), len(p), len(p_fix))
 
     if len(times) > 9:
         plt.xticks([times[i] for i in range(0, len(times), int(len(times)/5))])

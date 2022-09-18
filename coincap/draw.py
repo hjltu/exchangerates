@@ -94,6 +94,7 @@ def print_proc(times, table, plt_file):
         p = coin.get('shift')
         proc_min = min(p) if min(p) < proc_min else proc_min
         proc_max = max(p) if max(p) > proc_max else proc_max
+        plt.plot(t, [0]*len(p), color='black', linewidth=2, linestyle='dotted')
         plt.plot(t, p, color=next(cycol), label=label, linewidth=3, marker='o', markevery=int(len(p)/9)+1)
 
     if len(t) > 9:
@@ -129,6 +130,7 @@ def print_proc_price(times, table, plt_file):
         p = coin.get('shift')
         proc_min = min(p) if min(p) < proc_min else proc_min
         proc_max = max(p) if max(p) > proc_max else proc_max
+        plt.plot(t, [0]*len(p), color='black', linewidth=2, linestyle='dotted')
         plt.plot(t, p, color=next(cycol), label=label, linewidth=3, marker='o', markevery=int(len(p)/9)+1)
 
     if len(t) > 9:

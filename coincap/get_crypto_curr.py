@@ -23,6 +23,7 @@ import time
 import requests
 from tabulate import tabulate
 from datetime import datetime, timedelta
+from statistics import mean, median
 from config import *
 sys.path.append("..")
 from data.exchanges_db import DB
@@ -100,7 +101,7 @@ class Crypto(object):
 
         for curr in candles:
             data = curr.get('data')
-            periods = {'all': len(data), 'quart': 90, 'month': 30, 'week': 7}
+            periods = {'all': len(data), 'quart': 99, 'month': 33, 'week': 11}
             table.append({'curr': curr.get('curr')})
 
             if data:
@@ -113,10 +114,11 @@ class Crypto(object):
                 for per, day in periods.items():
                     l = min([float(l.get('low')) for l in data[len(data)-day:]])
                     h = max([float(m.get('high')) for m in data[len(data)-day:]])
+                    avearage = round(median([float(m.get('close')) for m in data[len(data)-day:]]), 4)
                     o = float(data[len(data)-day].get('open')) if len(data) > day else float(data[0].get('open'))
                     c = float(data[len(data)-1].get('close'))
 
-                    proc = int((c-o)/(o/100))
+                    proc = round((c-avearage)/(avearage/100), 2)
                     diff = int((h-l)/(o/100))
                     period = {per: {'l': l, 'h': h, 'o': o, 'c': c, 'p': proc, 'd': diff}}
                     table[len(table)-1].update(period)
@@ -147,8 +149,8 @@ class Crypto(object):
                 if curr.get('err'):
                     line += f"\t{curr.get('err')}"
                 else:
-                    proc = self.set_color(curr.get(per).get('p'), -25, 25, color, Style.LIGHT_BLUE, Style.LIGHT_GREEN)
-                    diff = self.set_color(curr.get(per).get('d'), 40, 60, color, Style.BOLD, Style.LIGHT_RED)
+                    proc = self.set_color(int(curr.get(per).get('p')), -33, 33, color, Style.LIGHT_BLUE, Style.LIGHT_GREEN)
+                    diff = self.set_color(int(curr.get(per).get('d')), 50, 80, color, Style.BOLD, Style.LIGHT_RED)
                     line += f"\t{proc}%{diff}"
 
             #print(line + f'{Style.RESET}')
@@ -175,9 +177,9 @@ class Crypto(object):
                     if dist == 0 and dist_w == 0:
                         line += f"\t{Style.RESET}{Style.BOLD}{curr.get('curr')}{Style.RESET}{color}"
                     else:
-                        dist = self.set_color(dist, -33, 33, color, Style.LIGHT_BLUE, Style.LIGHT_GREEN)
-                        dist_w = self.set_color(dist_w, -33, 33, color, Style.LIGHT_BLUE, Style.LIGHT_GREEN)
-                        line += f"\t{dist}%{dist_w}"
+                        dist_m = self.set_color(int(dist_m), -22, 22, color, Style.LIGHT_BLUE, Style.LIGHT_GREEN)
+                        dist_w = self.set_color(int(dist_w), -11, 11, color, Style.LIGHT_BLUE, Style.LIGHT_GREEN)
+                        line += f"\t{dist_m}%{dist_w}"
             line = line + f'{Style.RESET}'
             currency_table.append(line.split(sep='\t'))
             output_list.append(output_data)

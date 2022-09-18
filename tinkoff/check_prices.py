@@ -23,6 +23,7 @@ import os, sys
 from time import sleep
 from orders import Orders
 from datetime import datetime, timedelta
+from statistics import median, mean
 from pytz import timezone
 from config import TOKEN, TICKERS, DB, LOOP_INTERVAL, Style
 
@@ -43,7 +44,7 @@ def my_client():
     return client, stocks
 
 
-def get_price(candles_num=33, candles_period='day'):
+def get_price(candles_num=22, candles_period='day'):
     """
     {'week':
         {'figi': 'BBG000BNGBW9', 'ticker': 'NOK', 'isin': 'US6549022043',
@@ -82,7 +83,7 @@ def get_price(candles_num=33, candles_period='day'):
 
 
 def print_table(tickers, diff):
-    now=datetime.utcnow().strftime("%d%b%y")
+    now=datetime.utcnow().strftime("%d%b%y_%H:%M")
     msg, line, count, amount = '', '', 0, 0
 
     time_beat = []
@@ -98,7 +99,9 @@ def print_table(tickers, diff):
             month_close = month[len(month)-1].get('c')
             month_high = max(w.get('h') for w in month)
             month_low = min(w.get('l') for w in month)
-            month_proc = int((month_close - month_open)/(month_open/100))
+            month_avearage = round(mean([m.get('c') for m in month]), 2)
+
+            month_proc = int((month_close - month_avearage)/(month_avearage/100))
             month_diff = int((month_high - month_low)/(month_open/100))
 
             amount += month_close
@@ -136,7 +139,7 @@ def print_table(tickers, diff):
     client._add_to_db(now, time_beat)
 
 
-def main(diff=15):
+def main(diff=11):
 
     """
     Input:
